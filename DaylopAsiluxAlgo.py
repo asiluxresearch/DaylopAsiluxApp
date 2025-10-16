@@ -1,14 +1,14 @@
 # Install ONLY necessary packages (minimal set)
-!pip install pandas numpy scipy scikit-learn matplotlib seaborn plotly
+pip install pandas numpy scipy scikit-learn matplotlib seaborn plotly
 
 # For advanced time series and ML (optional but recommended)
-!pip install xgboost lightgbm statsmodels
+pip install xgboost lightgbm statsmodels
 
 # For similarity search
-!pip install dtaidistance
+pip install dtaidistance
 
 # Kaggle hub for data loading
-!pip install kagglehub
+pip install kagglehub
 
 print("✅ All dependencies installed!")
 
