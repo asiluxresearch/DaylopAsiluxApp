@@ -42,7 +42,7 @@ import os
 import json
 import pickle
 from typing import List, Dict, Tuple, Optional
-from dataclasses import dataclass  # Fixed: dataclasses (plural)
+from dataclasses import dataclass
 
 print("✅ All required libraries imported!")
 
@@ -228,8 +228,8 @@ if gold_data is not None:
     print(gold_data.head())
 else:
     print("❌ Failed to load gold data. Please check the dataset path or structure.")
-    
-    # Cell: Check and Fix Data Orientation
+
+# Cell: Check and Fix Data Orientation
 print("🔍 CHECKING DATA ORIENTATION...")
 
 # Check if we have USDXAU instead of XAUUSD
@@ -296,29 +296,6 @@ def convert_usdxau_to_xauusd(data):
     print(f"   Example: 0.0005 USDXAU = ${1/0.0005:,.0f} XAUUSD")
     
     return data
-
-# Uncomment and run if you need to convert:
-# gold_data = convert_usdxau_to_xauusd(gold_data)
-
-# After fixing data orientation, re-initialize everything
-print("🔄 Re-initializing forecasters with corrected data...")
-
-# Re-initialize all components with the corrected data
-years_forecaster = SimilarYearsForecaster(gold_data)
-smc_analyzer = SMCPriceActionAnalyzer(gold_data) 
-ml_enhancer = MLForecastEnhancer(gold_data)
-comprehensive_forecaster = ComprehensiveGoldForecaster(years_forecaster, smc_analyzer, ml_enhancer)
-
-# Show corrected data summary
-print(f"\n📊 CORRECTED DATA SUMMARY:")
-print(f"   Time period: {gold_data.index[0].strftime('%Y-%m-%d')} to {gold_data.index[-1].strftime('%Y-%m-%d')}")
-print(f"   Current gold price: ${gold_data['Close'].iloc[-1]:,.2f}")
-print(f"   All-time high: ${gold_data['Close'].max():,.2f}")
-print(f"   Recent trend: {'📈 Bullish' if gold_data['Close'].iloc[-1] > gold_data['Close'].iloc[-52] else '📉 Bearish'}")
-
-# Regenerate forecast with corrected data
-print("\n🚀 GENERATING NEW FORECAST WITH CORRECTED DATA...")
-final_forecast_corrected = generate_and_visualize_forecast()
 
 @dataclass
 class SimilarYear:
@@ -1405,18 +1382,8 @@ def calculate_quarterly_returns(prices: np.ndarray) -> List[float]:
     
     return quarters
 
-# Create detailed comparison (with error handling)
-if 'error' not in final_forecast:
-    print("\n🔍 CREATING DETAILED SIMILAR YEARS COMPARISON...")
-    try:
-        create_similar_years_comparison(final_forecast)
-    except Exception as e:
-        print(f"⚠️  Could not create detailed comparison: {e}")
-        print("📊 Creating simplified visualization instead...")
-        create_simplified_comparison(final_forecast)
-        
 def create_simplified_comparison(forecast: Dict):
-    #Create a simplified comparison when detailed data isn't available
+    """Create a simplified comparison when detailed data isn't available"""
     
     similar_years_data = forecast['component_analysis']['similar_years']
     
@@ -1480,8 +1447,35 @@ def create_simplified_comparison(forecast: Dict):
     )
     
     fig.show()
+
+# Create detailed comparison (with error handling)
+if 'error' not in final_forecast:
+    print("\n🔍 CREATING DETAILED SIMILAR YEARS COMPARISON...")
+    try:
+        create_similar_years_comparison(final_forecast)
+    except Exception as e:
+        print(f"⚠️  Could not create detailed comparison: {e}")
+        print("📊 Creating simplified visualization instead...")
+        create_simplified_comparison(final_forecast)
+
+def create_forecast_summary(forecast: Dict):
+    """Create a simple text summary of the forecast"""
+    if 'error' in forecast:
+        print("❌ Forecast generation failed")
+        return
     
-    def export_forecast_results(forecast: Dict, filename: str = "gold_forecast_results"):
+    print("\n📊 FORECAST SUMMARY:")
+    print(f"   Analysis Year: {forecast.get('current_year', 'N/A')}")
+    print(f"   Forecast Year: {forecast.get('forecast_year', 'N/A')}")
+    print(f"   Current Price: ${forecast.get('current_price', 0):,.2f}")
+    
+    if 'final_forecast' in forecast:
+        expected_return = forecast['final_forecast']['final_expected_return']
+        expected_price = forecast['current_price'] * (1 + expected_return)
+        print(f"   Expected Return: {expected_return:+.2%}")
+        print(f"   Expected Price: ${expected_price:,.2f}")
+
+def export_forecast_results(forecast: Dict, filename: str = "gold_forecast_results"):
     """Export forecast results to files with proper type handling"""
     
     if 'error' in forecast:
@@ -1633,18 +1627,7 @@ def create_simplified_comparison(forecast: Dict):
     
     print(f"\n📁 All exports saved to: /kaggle/working/forecast_results/")
 
-# Create summary and export results
-if 'error' not in final_forecast:
-    print("\n" + "="*80)
-    print("📋 FINAL FORECAST SUMMARY & EXPORT")
-    print("="*80)
-    
-    create_forecast_summary(final_forecast)
-    export_forecast_results(final_forecast, "gold_forecast")
-else:
-    print("❌ Cannot export - forecast generation failed")
-    
-    def export_forecast_results_simple(forecast: Dict, filename: str = "gold_forecast_results"):
+def export_forecast_results_simple(forecast: Dict, filename: str = "gold_forecast_results"):
     """Simple export function that handles basic data types only"""
     
     if 'error' in forecast:
@@ -1748,3 +1731,5 @@ if 'error' not in final_forecast:
         print(f"⚠️  Comprehensive export failed: {e}")
         print("🔄 Trying simple export...")
         export_forecast_results_simple(final_forecast, "gold_forecast_simple")
+else:
+    print("❌ Cannot export - forecast generation failed")
