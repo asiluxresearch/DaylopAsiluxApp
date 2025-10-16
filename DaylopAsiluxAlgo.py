@@ -1415,8 +1415,8 @@ if 'error' not in final_forecast:
         print("📊 Creating simplified visualization instead...")
         create_simplified_comparison(final_forecast)
         
-        def create_simplified_comparison(forecast: Dict):
-    """Create a simplified comparison when detailed data isn't available"""
+def create_simplified_comparison(forecast: Dict):
+    #Create a simplified comparison when detailed data isn't available
     
     similar_years_data = forecast['component_analysis']['similar_years']
     
